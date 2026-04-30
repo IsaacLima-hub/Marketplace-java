@@ -1,0 +1,76 @@
+/* RESET */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f5f7fb;
+    color:#222;
+}
+
+/* NAVBAR */
+.navbar{
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.navbar-brand{
+    font-size:24px;
+    font-weight:bold;
+    color:#0d6efd !important;
+}
+
+.nav-link{
+    font-weight:500;
+}
+
+/* TITULOS */
+h1,h2,h3{
+    font-weight:bold;
+}
+
+/* CARDS DE ANÚNCIOS */
+.card{
+    border:none;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+}
+
+.card-img-top{
+    height:220px;
+    object-fit:cover;
+    border-top-left-radius:12px;
+    border-top-right-radius:12px;
+}
+
+/* BOTÕES */
+.btn{
+    border-radius:8px;
+}
+
+/* FORMULÁRIOS */
+form{
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.form-control{
+    border-radius:8px;
+}
+
+/* FOOTER */
+footer{
+    margin-top:50px;
+    padding:20px;
+    text-align:center;
+    color:#666;
+}

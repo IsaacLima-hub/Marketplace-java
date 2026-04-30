@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Anúncio - Veículos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <i class="fas fa-car-side me-2"></i>Veículos
+        </a>
+
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Início</a>
+                </li>
+
+                <li class="nav-item" id="userNav" style="display:none;">
+                    <span class="nav-link">
+                        <i class="fas fa-user"></i> <span id="userNome"></span>
+                    </span>
+                </li>
+
+                <li class="nav-item" id="logoutNav" style="display:none;">
+                    <a href="#" class="nav-link btn-logout btn px-3" onclick="logout()">Sair</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- FORM -->
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="form-container fade-in-up">
+
+                <div class="text-center mb-4">
+                    <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                    <h2 class="text-gradient">Novo Anúncio</h2>
+                    <p class="text-muted">Crie seu anúncio de forma rápida e fácil</p>
+                </div>
+
+                <form onsubmit="criarAnuncio(event)">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Marca</label>
+                            <input type="text" id="marca" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Modelo</label>
+                            <input type="text" id="modelo" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Ano</label>
+                            <input type="number" id="ano" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Preço</label>
+                            <input type="number" id="preco" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Imagem do Veículo</label>
+                            <input type="file" id="imagem" class="form-control" accept="image/*" onchange="previewImagem()">
+                        </div>
+
+                    </div>
+
+                    <div class="mb-4 text-center">
+                        <img id="preview" src="" style="max-width:300px; display:none; border-radius:12px;">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Descrição</label>
+                        <textarea id="descricao" class="form-control" rows="4" required></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Usuário</label>
+                        <input type="text" id="usuarioLogadoNome" class="form-control" disabled>
+                    </div>
+
+                    <div class="d-grid gap-3 d-md-flex justify-content-md-between">
+                        <button type="submit" class="btn btn-success btn-lg flex-fill">
+                            Salvar Anúncio
+                        </button>
+
+                        <a href="index.html" class="btn btn-secondary btn-lg flex-fill">
+                            Voltar
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2026 Veículos Marketplace</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+
+<script>
+    function previewImagem() {
+        const arquivo = document.getElementById("imagem").files[0];
+        const preview = document.getElementById("preview");
+
+        if (arquivo) {
+            const leitor = new FileReader();
+
+            leitor.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = "block";
+            }
+
+            leitor.readAsDataURL(arquivo);
+        }
+    }
+</script>
+
+</body>
+</html>

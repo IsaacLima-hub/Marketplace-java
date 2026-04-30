@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veículos - Marketplace</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html">
+            🚗 Veículos
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Início</a>
+                </li>
+
+                <li class="nav-item" id="btnCriar" style="display:none;">
+                    <a class="nav-link" href="criar.html">Novo Anúncio</a>
+                </li>
+
+                <li class="nav-item" id="userNav" style="display:none;">
+                    <span class="nav-link fw-bold" id="userNome"></span>
+                </li>
+
+                <li class="nav-item" id="logoutNav" style="display:none;">
+                    <a class="nav-link text-danger" href="#" onclick="logout()">Sair</a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<div class="container mt-5 mb-4">
+    <div class="text-center">
+        <h1 class="fw-bold">Veículos à Venda</h1>
+        <p class="text-muted">Encontre as melhores oportunidades do mercado</p>
+    </div>
+</div>
+<div class="container mb-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <input
+                    type="text"
+                    id="searchInput"
+                    class="form-control form-control-lg"
+                    placeholder="Buscar por marca, modelo ou ano..."
+                    onkeyup="filtrarAnuncios()"
+            >
+        </div>
+    </div>
+</div>
+<!-- ANÚNCIOS -->
+<div class="container">
+    <div id="listaAnuncios" class="row g-4"></div>
+</div>
+
+<!-- FOOTER -->
+<footer class="text-center mt-5 mb-3 text-muted">
+    © 2026 Veículos Marketplace
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
