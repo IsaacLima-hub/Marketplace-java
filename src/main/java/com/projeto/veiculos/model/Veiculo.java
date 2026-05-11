@@ -24,6 +24,10 @@ public class Veiculo {
     private LocalDate dataAnuncio;
     private boolean disponivel;
 
+    @ManyToOne
+    @JoinColumn(name = "reservado_por_id")
+    private Usuario reservadoPor;
+
     // GETTERS
 
     public Long getId() {
@@ -57,7 +61,10 @@ public class Veiculo {
     public boolean isDisponivel() {
         return disponivel;
     }
+
     public String getImagem() {return imagem;}
+
+    public Usuario getReservadoPor() {return reservadoPor;}
 
     // SETTERS
 
@@ -92,7 +99,11 @@ public class Veiculo {
     public void setDisponivel(boolean disponivel) {
         this.disponivel = disponivel;
     }
+
     public void setImagem(String imagem) {
         this.imagem = imagem;
     }
+
+    public void setReservadoPor(Usuario reservadoPor) {this.reservadoPor = reservadoPor;}
+
 }

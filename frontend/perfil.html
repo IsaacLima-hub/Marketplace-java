@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html">🚗 Veículos</a>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-body">
+            <h2 class="mb-4">Meu Perfil</h2>
+
+            <p><strong>Nome:</strong> <span id="perfilNome"></span></p>
+            <p><strong>E-mail:</strong> <span id="perfilEmail"></span></p>
+            <p><strong>Telefone:</strong> <span id="perfilTelefone"></span></p>
+            <p><strong>CPF:</strong> <span id="perfilCpf"></span></p>
+
+            <hr>
+
+            <h4>Alterar Senha</h4>
+
+            <div class="mb-3">
+                <label class="form-label">Senha Atual</label>
+                <input type="password" id="senhaAtual" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Nova Senha</label>
+                <input type="password" id="novaSenha" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Confirmar Nova Senha</label>
+                <input type="password" id="confirmarSenha" class="form-control">
+            </div>
+
+            <button class="btn btn-primary" onclick="alterarSenha()">
+                Alterar Senha
+            </button>
+
+            <a href="index.html" class="btn btn-secondary ms-2">
+                Voltar
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = "http://localhost:8080";
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    // Verifica se o usuário está logado
+    if (!usuarioLogado) {
+        alert("Você precisa estar logado.");
+        window.location.href = "login.html";
+    }
+
+    // Carrega os dados do usuário na tela
+    function carregarPerfil() {
+        document.getElementById("perfilNome").textContent =
+            usuarioLogado.nome || "Não informado";
+
+        document.getElementById("perfilEmail").textContent =
+            usuarioLogado.email || "Não informado";
+
+        document.getElementById("perfilTelefone").textContent =
+            usuarioLogado.telefone || "Não informado";
+
+        document.getElementById("perfilCpf").textContent =
+            usuarioLogado.cpf || "Não informado";
+    }
+    // Função para alterar a senha
+    async function alterarSenha() {
+        const senhaAtual = document.getElementById("senhaAtual").value;
+        const novaSenha = document.getElementById("novaSenha").value;
+        const confirmarSenha = document.getElementById("confirmarSenha").value;
+
+        // Verifica se as novas senhas são iguais
+        if (novaSenha !== confirmarSenha) {
+            alert("As novas senhas não coincidem.");
+            return;
+        }
+
+        const response = await fetch(
+            `${API_URL}/usuarios/${usuarioLogado.id}/senha`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    senhaAtual: senhaAtual,
+                    novaSenha: novaSenha
+                })
+            }
+        );
+
+        const mensagem = await response.text();
+
+        if (response.ok) {
+            alert(mensagem);
+
+            // Atualiza os dados salvos no navegador
+            usuarioLogado.senha = novaSenha;
+            localStorage.setItem(
+                "usuarioLogado",
+                JSON.stringify(usuarioLogado)
+            );
+
+            // Limpa os campos
+            document.getElementById("senhaAtual").value = "";
+            document.getElementById("novaSenha").value = "";
+            document.getElementById("confirmarSenha").value = "";
+        } else {
+            alert(mensagem);
+        }
+    }
+
+    // Executa automaticamente ao abrir a página
+    carregarPerfil();
+</script>
+
+</body>
+</html>

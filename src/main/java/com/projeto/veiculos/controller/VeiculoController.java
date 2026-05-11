@@ -1,5 +1,6 @@
 package com.projeto.veiculos.controller;
 
+import com.projeto.veiculos.model.Usuario;
 import com.projeto.veiculos.model.Veiculo;
 import com.projeto.veiculos.repository.VeiculoRepository;
 
@@ -8,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import com.projeto.veiculos.model.Usuario;
+import com.projeto.veiculos.repository.UsuarioRepository;
 
 @RestController
 @RequestMapping("/veiculos")
@@ -16,6 +19,8 @@ public class VeiculoController {
 
     @Autowired
     private VeiculoRepository repository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     // LISTAR
     @GetMapping
@@ -37,14 +42,18 @@ public class VeiculoController {
         repository.deleteById(id);
     }
 
-    @PutMapping("/reservar/{id}")
-    public Veiculo reservar(@PathVariable Long id) {
-        Veiculo v = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Veículo não encontrado"));
+    @PutMapping("/reservar/{idVeiculo}/{idUsuario}")
+    public Veiculo reservarVeiculo(
+            @PathVariable Long idVeiculo,
+            @PathVariable Long idUsuario) {
 
-        v.setDisponivel(false);
+        Veiculo veiculo = repository.findById(idVeiculo).orElseThrow();
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElseThrow();
 
-        return repository.save(v);
+        veiculo.setDisponivel(false);
+        veiculo.setReservadoPor(usuario);
+
+        return repository.save(veiculo);
     }
     @PutMapping("/{id}")
     public Veiculo atualizar(@PathVariable Long id, @RequestBody Veiculo dadosNovos) {

@@ -13,9 +13,11 @@ public class Usuario {
     private String email;
     private String senha;
     private String telefone;
+    private String cpf;
+
+    private Boolean admin = false;
 
     // GETTERS
-
     public Long getId() { return id; }
 
     public String getNome() { return nome; }
@@ -24,10 +26,13 @@ public class Usuario {
 
     public String getSenha() { return senha; }
 
-    public String getTelefone() {return telefone;}
+    public String getTelefone() { return telefone; }
+
+    public Boolean getAdmin() { return admin; }
+
+    public String getCpf() {return cpf;}
 
     // SETTERS
-
     public void setId(Long id) { this.id = id; }
 
     public void setNome(String nome) { this.nome = nome; }
@@ -36,6 +41,10 @@ public class Usuario {
 
     public void setSenha(String senha) { this.senha = senha; }
 
-    public void setTelefone(String telefone) {this.telefone = telefone;}
+    public void setTelefone(String telefone) { this.telefone = telefone; }
+
+    public void setAdmin(Boolean admin) { this.admin = admin; }
+
+    public void setCpf(String cpf) {this.cpf = cpf;}
 
 }

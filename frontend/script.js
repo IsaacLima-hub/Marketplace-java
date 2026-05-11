@@ -50,11 +50,13 @@ async function fetchMock(url) {
 // NAVBAR / AUTH
 // ==========================
 function atualizarNavbar() {
+    const reservadosNav = document.getElementById("reservadosNav");
     const usuario = localStorage.getItem("usuarioLogado");
     const userNav = document.getElementById("userNav");
     const logoutNav = document.getElementById("logoutNav");
     const btnCriar = document.getElementById("btnCriar");
     const userNome = document.getElementById("userNome");
+    const perfilNav = document.getElementById("perfilNav");
 
     if (usuario) {
         const u = JSON.parse(usuario);
@@ -63,10 +65,14 @@ function atualizarNavbar() {
         if (logoutNav) logoutNav.style.display = "block";
         if (btnCriar) btnCriar.style.display = "block";
         if (userNome) userNome.textContent = u.nome;
+        if (perfilNav) perfilNav.style.display = "block";
+        if (reservadosNav) reservadosNav.style.display = "block";
     } else {
         if (userNav) userNav.style.display = "none";
         if (logoutNav) logoutNav.style.display = "none";
         if (btnCriar) btnCriar.style.display = "none";
+        if (perfilNav) perfilNav.style.display = "none";
+        if (reservadosNav) reservadosNav.style.display = "none";
     }
 }
 
@@ -322,9 +328,20 @@ Chamar no WhatsApp
 }
 
 async function reservarVeiculo(id) {
-    await fetch(`http://localhost:8080/veiculos/reservar/${id}`, {
-        method: "PUT"
-    });
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    if (!usuario) {
+        alert("Você precisa estar logado!");
+        window.location.href = "login.html";
+        return;
+    }
+
+    await fetch(
+        `http://localhost:8080/veiculos/reservar/${id}/${usuario.id}`,
+        {
+            method: "PUT"
+        }
+    );
 
     alert("Veículo reservado com sucesso!");
     carregarDetalhes();
@@ -423,6 +440,7 @@ async function login(event) {
             return;
         }
 
+        // Salva o usuário completo, incluindo CPF
         localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
         alert("Login realizado com sucesso!");
         window.location.href = "index.html";
@@ -441,6 +459,7 @@ async function cadastrar(event) {
     const email = document.getElementById("email").value;
     const telefone = document.getElementById("telefone").value;
     const senha = document.getElementById("senha").value;
+    const cpf = document.getElementById("cpf").value;
 
     if (senha.length < 6) {
         alert("Senha deve ter no mínimo 6 caracteres.");
@@ -456,6 +475,7 @@ async function cadastrar(event) {
             nome,
             email,
             telefone,
+            cpf,
             senha
         })
     });
@@ -483,6 +503,12 @@ window.onload = function () {
     if (window.location.pathname.includes("editar.html")) {
         carregarEditar();
     }
+    if (window.location.pathname.includes("reservados.html")) {
+        carregarReservados();
+    }
+    if (window.location.pathname.includes("perfil.html")) {
+        carregarPerfil();
+    }
 };
 function previewImagem() {
     const arquivo = document.getElementById("imagem").files[0];
@@ -509,4 +535,79 @@ function converterImagemBase64(arquivo) {
 
         leitor.readAsDataURL(arquivo);
     });
+}
+async function carregarReservados() {
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    if (!usuario) {
+        alert("Você precisa estar logado!");
+        window.location.href = "login.html";
+        return;
+    }
+
+    const resposta = await fetch("http://localhost:8080/veiculos");
+    const veiculos = await resposta.json();
+
+    const lista = document.getElementById("listaReservados");
+    if (!lista) return;
+
+    lista.innerHTML = "";
+
+    const reservados = veiculos.filter(v =>
+        v.reservadoPor &&
+        v.reservadoPor.id === usuario.id
+    );
+
+    if (reservados.length === 0) {
+        lista.innerHTML =
+            '<p class="text-muted">Você ainda não reservou nenhum veículo.</p>';
+        return;
+    }
+
+    reservados.forEach(v => {
+        const card = document.createElement("div");
+        card.className = "col-md-4";
+
+        card.innerHTML = `
+            <div class="card h-100 shadow">
+                <img src="${v.imagem}" class="card-img-top" alt="${v.marca}">
+                <div class="card-body">
+                    <h5 class="card-title">${v.marca} ${v.modelo}</h5>
+                    <p>Ano: ${v.ano}</p>
+                    <h6 class="text-success">
+                        R$ ${Number(v.preco).toLocaleString('pt-BR')}
+                    </h6>
+                    <span class="badge bg-danger">Reservado</span>
+                </div>
+            </div>
+        `;
+
+        lista.appendChild(card);
+    });
+}
+// ==========================
+// PERFIL
+// ==========================
+function carregarPerfil() {
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    console.log("Usuário carregado:", usuario);
+
+    if (!usuario) {
+        alert("Você precisa estar logado.");
+        window.location.href = "login.html";
+        return;
+    }
+
+    document.getElementById("perfilNome").textContent =
+        usuario.nome || "Não informado";
+
+    document.getElementById("perfilEmail").textContent =
+        usuario.email || "Não informado";
+
+    document.getElementById("perfilTelefone").textContent =
+        usuario.telefone || "Não informado";
+
+    document.getElementById("perfilCpf").textContent =
+        usuario.cpf || "Não informado";
 }
