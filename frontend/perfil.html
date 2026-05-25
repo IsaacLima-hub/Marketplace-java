@@ -27,6 +27,35 @@
 
             <hr>
 
+            <h4>Editar Perfil</h4>
+
+            <div class="mb-3">
+                <label class="form-label">Nome</label>
+                <input type="text" id="editarNome" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">E-mail</label>
+                <input type="email" id="editarEmail" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Telefone</label>
+                <input type="text" id="editarTelefone" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">CPF</label>
+                <input type="text" id="editarCpf" class="form-control">
+            </div>
+
+            <button class="btn btn-success" onclick="atualizarPerfil()">
+                Salvar Alterações
+            </button>
+
+
+            <hr>
+
             <h4>Alterar Senha</h4>
 
             <div class="mb-3">
@@ -64,7 +93,52 @@
         alert("Você precisa estar logado.");
         window.location.href = "login.html";
     }
+    // Função para salvar alterações do perfil
+    async function salvarPerfil() {
+        const nome = document.getElementById("editarNome").value;
+        const email = document.getElementById("editarEmail").value;
+        const telefone = document.getElementById("editarTelefone").value;
+        const cpf = document.getElementById("editarCpf").value;
 
+        const response = await fetch(
+            `${API_URL}/usuarios/${usuarioLogado.id}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    email: email,
+                    telefone: telefone,
+                    cpf: cpf
+                })
+            }
+        );
+
+        if (response.ok) {
+            const usuarioAtualizado = await response.json();
+
+            // Atualiza os dados no localStorage
+            localStorage.setItem(
+                "usuarioLogado",
+                JSON.stringify(usuarioAtualizado)
+            );
+
+            // Atualiza a variável em memória
+            usuarioLogado.nome = usuarioAtualizado.nome;
+            usuarioLogado.email = usuarioAtualizado.email;
+            usuarioLogado.telefone = usuarioAtualizado.telefone;
+            usuarioLogado.cpf = usuarioAtualizado.cpf;
+
+            // Atualiza as informações exibidas na página
+            carregarPerfil();
+
+            alert("Perfil atualizado com sucesso!");
+        } else {
+            alert("Erro ao atualizar perfil.");
+        }
+    }
     // Carrega os dados do usuário na tela
     function carregarPerfil() {
         document.getElementById("perfilNome").textContent =
@@ -78,6 +152,19 @@
 
         document.getElementById("perfilCpf").textContent =
             usuarioLogado.cpf || "Não informado";
+
+        // Preenche os campos de edição
+        document.getElementById("editarNome").value =
+            usuarioLogado.nome || "";
+
+        document.getElementById("editarEmail").value =
+            usuarioLogado.email || "";
+
+        document.getElementById("editarTelefone").value =
+            usuarioLogado.telefone || "";
+
+        document.getElementById("editarCpf").value =
+            usuarioLogado.cpf || "";
     }
     // Função para alterar a senha
     async function alterarSenha() {
@@ -124,6 +211,53 @@
         } else {
             alert(mensagem);
         }
+    }
+
+        async function atualizarPerfil() {
+        const nome = document.getElementById("editarNome").value;
+        const email = document.getElementById("editarEmail").value;
+        const telefone = document.getElementById("editarTelefone").value;
+        const cpf = document.getElementById("editarCpf").value;
+
+        const response = await fetch(
+        `${API_URL}/usuarios/${usuarioLogado.id}`,
+    {
+        method: "PUT",
+        headers: {
+        "Content-Type": "application/json"
+    },
+        body: JSON.stringify({
+        nome,
+        email,
+        telefone,
+        cpf
+    })
+    }
+        );
+
+        if (!response.ok) {
+        alert("Erro ao atualizar perfil.");
+        return;
+    }
+
+        const usuarioAtualizado = await response.json();
+
+        // Mantém a senha atual no localStorage
+        usuarioAtualizado.senha = usuarioLogado.senha;
+
+        // Atualiza os dados locais
+        localStorage.setItem(
+        "usuarioLogado",
+        JSON.stringify(usuarioAtualizado)
+        );
+
+        // Atualiza a variável em memória
+        Object.assign(usuarioLogado, usuarioAtualizado);
+
+        // Recarrega os dados na tela
+        carregarPerfil();
+
+        alert("Perfil atualizado com sucesso!");
     }
 
     // Executa automaticamente ao abrir a página

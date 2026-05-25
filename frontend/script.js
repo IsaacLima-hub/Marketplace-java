@@ -57,6 +57,8 @@ function atualizarNavbar() {
     const btnCriar = document.getElementById("btnCriar");
     const userNome = document.getElementById("userNome");
     const perfilNav = document.getElementById("perfilNav");
+    const adminNav = document.getElementById("adminNav");
+
 
     if (usuario) {
         const u = JSON.parse(usuario);
@@ -67,12 +69,17 @@ function atualizarNavbar() {
         if (userNome) userNome.textContent = u.nome;
         if (perfilNav) perfilNav.style.display = "block";
         if (reservadosNav) reservadosNav.style.display = "block";
+        if (adminNav && u.admin === true) {
+            adminNav.style.display = "block";
+        }
+
     } else {
         if (userNav) userNav.style.display = "none";
         if (logoutNav) logoutNav.style.display = "none";
         if (btnCriar) btnCriar.style.display = "none";
         if (perfilNav) perfilNav.style.display = "none";
         if (reservadosNav) reservadosNav.style.display = "none";
+        if (adminNav) adminNav.style.display = "none";
     }
 }
 
@@ -148,18 +155,30 @@ async function carregarAnuncios() {
         Ver Detalhes
     </button>
 
-    ${
-            JSON.parse(localStorage.getItem("usuarioLogado"))?.id === a.usuario.id
-                ? `
-        <button class="btn btn-warning" onclick="editarAnuncio(${a.id})">
-            Editar
-        </button>
+   ${
+            (() => {
+                const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
 
-        <button class="btn btn-outline-danger" onclick="deletar(${a.id})">
-            Excluir
-        </button>
-        `
-                : ''
+                if (
+                    usuario &&
+                    (
+                        usuario.id === a.usuario.id ||
+                        usuario.admin === true
+                    )
+                ) {
+                    return `
+                <button class="btn btn-warning" onclick="editarAnuncio(${a.id})">
+                    Editar
+                </button>
+
+                <button class="btn btn-outline-danger" onclick="deletar(${a.id})">
+                    Excluir
+                </button>
+            `;
+                }
+
+                return '';
+            })()
         }
 </div>
                 </div>
@@ -322,7 +341,9 @@ Chamar no WhatsApp
         ${
         a.veiculo.disponivel === false
             ? `<button class="btn btn-secondary w-100 mt-3" disabled>Veículo Reservado</button>`
-            : `<button class="btn btn-danger w-100 mt-3" onclick="reservarVeiculo(${a.veiculo.id})">Reservar Veículo</button>`
+            : `<button class="btn btn-success w-100 mt-3" onclick="pagarEntrada(${a.veiculo.id})">
+    Pagar 10% e Reservar
+</button>`
     }
     `;
 }
@@ -461,6 +482,29 @@ async function cadastrar(event) {
     const senha = document.getElementById("senha").value;
     const cpf = document.getElementById("cpf").value;
 
+    // Remove caracteres especiais
+    const cpfLimpo =
+        cpf.replace(/\D/g, "");
+
+    const telefoneLimpo =
+        telefone.replace(/\D/g, "");
+
+// Valida CPF
+    if (cpfLimpo.length !== 11) {
+
+        alert("CPF inválido!");
+
+        return;
+    }
+
+// Valida telefone
+    if (telefoneLimpo.length !== 11) {
+
+        alert("Telefone inválido!");
+
+        return;
+    }
+
     if (senha.length < 6) {
         alert("Senha deve ter no mínimo 6 caracteres.");
         return;
@@ -508,6 +552,9 @@ window.onload = function () {
     }
     if (window.location.pathname.includes("perfil.html")) {
         carregarPerfil();
+    }
+    if (window.location.pathname.includes("admin.html")) {
+        carregarUsuariosAdmin();
     }
 };
 function previewImagem() {
@@ -611,3 +658,232 @@ function carregarPerfil() {
     document.getElementById("perfilCpf").textContent =
         usuario.cpf || "Não informado";
 }
+// ==========================
+// PAINEL ADMIN
+// ==========================
+async function carregarUsuariosAdmin() {
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    // Verifica se está logado
+    if (!usuario) {
+        alert("Você precisa estar logado.");
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Verifica se é administrador
+    if (usuario.admin !== true) {
+        alert("Acesso permitido apenas para administradores.");
+        window.location.href = "index.html";
+        return;
+    }
+
+    // Busca todos os usuários
+    const resposta = await fetch("http://localhost:8080/usuarios");
+    const usuarios = await resposta.json();
+
+    const lista = document.getElementById("listaUsuarios");
+    if (!lista) return;
+
+    lista.innerHTML = "";
+
+    usuarios.forEach(u => {
+        const card = document.createElement("div");
+        card.className = "card mb-3 shadow-sm";
+
+        card.innerHTML = `
+            <div class="card-body">
+                <h5>${u.nome}</h5>
+                <p class="mb-1"><strong>Email:</strong> ${u.email}</p>
+                <p class="mb-1"><strong>CPF:</strong> ${u.cpf || "Não informado"}</p>
+                <p class="mb-1"><strong>Telefone:</strong> ${u.telefone || "Não informado"}</p>
+                <p class="mb-3">
+                    <strong>Administrador:</strong>
+                    ${u.admin ? "✅ Sim" : "❌ Não"}
+                </p>
+
+                ${
+            !u.admin
+                ? `
+                        <button class="btn btn-success btn-sm"
+                                onclick="promoverAdmin(${u.id})">
+                            Tornar Admin
+                        </button>
+                        `
+                : ""
+        }
+
+                ${
+            u.id !== usuario.id
+                ? `
+                        <button class="btn btn-danger btn-sm ms-2"
+                                onclick="excluirUsuario(${u.id})">
+                            Excluir Usuário
+                        </button>
+                        `
+                : ""
+        }
+            </div>
+        `;
+
+        lista.appendChild(card);
+    });
+}// Promover usuário para administrador
+async function promoverAdmin(id) {
+    if (!confirm("Deseja tornar este usuário um administrador?")) {
+        return;
+    }
+
+    const resposta = await fetch(
+        `http://localhost:8080/usuarios/${id}/tornar-admin`,
+        {
+            method: "PUT"
+        }
+    );
+
+    const mensagem = await resposta.text();
+
+    if (resposta.ok) {
+        alert(mensagem);
+        carregarUsuariosAdmin();
+    } else {
+        alert("Erro ao promover usuário.");
+    }
+}
+
+// Excluir usuário
+async function excluirUsuario(id) {
+    if (!confirm("Tem certeza que deseja excluir este usuário?")) {
+        return;
+    }
+
+    const resposta = await fetch(
+        `http://localhost:8080/usuarios/${id}`,
+        {
+            method: "DELETE"
+        }
+    );
+
+    const mensagem = await resposta.text();
+
+    if (resposta.ok) {
+        alert(mensagem);
+        carregarUsuariosAdmin();
+    } else {
+        alert("Erro ao excluir usuário.");
+    }
+}async function pagarEntrada(veiculoId) {
+    const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    if (!usuario) {
+        alert("Você precisa estar logado!");
+        window.location.href = "login.html";
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `http://localhost:8080/pagamentos/entrada/${veiculoId}`,
+            {
+                method: "POST"
+            }
+        );
+
+        if (!response.ok) {
+            alert("Erro ao gerar pagamento.");
+            return;
+        }
+
+        const dados = await response.json();
+
+        // Redireciona para o Checkout Pro do Mercado Pago
+        window.open(dados.url, "_blank");
+
+        localStorage.setItem(
+            "ultimoVeiculo",
+            veiculoId
+        );
+    } catch (error) {
+        console.error(error);
+        alert("Erro ao conectar com o servidor.");
+    }
+}// ==========================
+// PROCESSAR RESERVA APÓS PAGAMENTO
+// ==========================
+async function processarReservaAposPagamento() {
+
+    const params =
+        new URLSearchParams(window.location.search);
+
+    let veiculoId =
+        params.get("veiculoId");
+
+    if (!veiculoId) {
+        veiculoId =
+            localStorage.getItem("ultimoVeiculo");
+    }
+
+    const usuario =
+        JSON.parse(localStorage.getItem("usuarioLogado"));
+
+    if (!usuario || !veiculoId) {
+
+        alert(
+            "Dados inválidos para processar a reserva."
+        );
+
+        window.location.href = "index.html";
+        return;
+    }
+
+    try {
+
+        await fetch(
+            `http://localhost:8080/veiculos/reservar/${veiculoId}/${usuario.id}`,
+            {
+                method: "PUT"
+            }
+        );
+
+        alert("Veículo reservado com sucesso!");
+
+        window.location.href = "reservados.html";
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Erro ao processar a reserva.");
+
+        window.location.href = "index.html";
+    }
+}// ==========================
+// MÁSCARAS CPF E TELEFONE
+// ==========================
+
+window.addEventListener("load", () => {
+
+    const cpfInput =
+        document.getElementById("cpf");
+
+    const telefoneInput =
+        document.getElementById("telefone");
+
+    if (cpfInput) {
+
+        IMask(cpfInput, {
+
+            mask: "000.000.000-00"
+
+        });
+    }
+
+    if (telefoneInput) {
+
+        IMask(telefoneInput, {
+
+            mask: "(00) 00000-0000"
+
+        });
+    }
+});
