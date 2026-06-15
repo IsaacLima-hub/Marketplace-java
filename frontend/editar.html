@@ -44,8 +44,17 @@
             </div>
 
             <div class="mb-3">
-                <label>URL da Imagem</label>
-                <input type="text" id="imagem" class="form-control">
+                <label>Nova Imagem do Veículo</label>
+                <input
+                        type="file"
+                        id="imagem"
+                        class="form-control"
+                        accept="image/*"
+                        onchange="previewImagem()">
+
+                <img
+                        id="preview"
+                        style="max-width:300px; margin-top:10px; display:none;">
             </div>
 
             <div class="mb-3">

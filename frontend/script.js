@@ -386,8 +386,14 @@ async function carregarEditar() {
     document.getElementById("modelo").value = a.veiculo.modelo;
     document.getElementById("ano").value = a.veiculo.ano;
     document.getElementById("preco").value = a.veiculo.preco;
-    document.getElementById("imagem").value = a.veiculo.imagem;
     document.getElementById("descricao").value = a.descricao;
+
+    const preview = document.getElementById("preview");
+
+    if (a.veiculo.imagem) {
+        preview.src = a.veiculo.imagem;
+        preview.style.display = "block";
+    }
 }
 
 // ==========================
@@ -402,13 +408,20 @@ async function salvarEdicao(event) {
     const modelo = document.getElementById("modelo").value;
     const ano = document.getElementById("ano").value;
     const preco = document.getElementById("preco").value;
-    const imagem = document.getElementById("imagem").value;
+    const arquivoImagem =
+        document.getElementById("imagem").files[0];
     const descricao = document.getElementById("descricao").value;
 
     const respostaAnuncio = await fetch(`http://localhost:8080/anuncios/${id}`);
     const anuncioAtual = await respostaAnuncio.json();
 
     const idVeiculo = anuncioAtual.veiculo.id;
+
+    let imagemAtual = anuncioAtual.veiculo.imagem;
+
+    if (arquivoImagem) {
+        imagemAtual = await converterImagemBase64(arquivoImagem);
+    }
 
     // atualiza veículo
     await fetch(`http://localhost:8080/veiculos/${idVeiculo}`, {
@@ -422,7 +435,7 @@ async function salvarEdicao(event) {
             modelo,
             ano,
             preco,
-            imagem,
+            imagem: imagemAtual,
             disponivel: anuncioAtual.veiculo.disponivel
         })
     });
@@ -483,49 +496,91 @@ async function cadastrar(event) {
     const cpf = document.getElementById("cpf").value;
 
     // Remove caracteres especiais
-    const cpfLimpo =
-        cpf.replace(/\D/g, "");
+    const cpfLimpo = cpf.replace(/\D/g, "");
+    const telefoneLimpo = telefone.replace(/\D/g, "");
 
-    const telefoneLimpo =
-        telefone.replace(/\D/g, "");
-
-// Valida CPF
+    // Valida CPF
     if (cpfLimpo.length !== 11) {
-
         alert("CPF inválido!");
-
         return;
     }
 
-// Valida telefone
+    // Valida telefone
     if (telefoneLimpo.length !== 11) {
-
         alert("Telefone inválido!");
-
         return;
     }
 
+    // Valida senha
     if (senha.length < 6) {
         alert("Senha deve ter no mínimo 6 caracteres.");
         return;
     }
 
-    await fetch("http://localhost:8080/usuarios", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            nome,
-            email,
-            telefone,
-            cpf,
-            senha
-        })
-    });
+    try {
 
-    alert("Conta criada com sucesso!");
-    window.location.href = "login.html";
+        // Busca usuários existentes
+        const respostaUsuarios =
+            await fetch("http://localhost:8080/usuarios");
+
+        const usuarios =
+            await respostaUsuarios.json();
+
+        // Verifica e-mail
+        const emailExiste = usuarios.some(
+            u => u.email &&
+                u.email.toLowerCase() === email.toLowerCase()
+        );
+
+        if (emailExiste) {
+            alert("Este e-mail já está cadastrado.");
+            return;
+        }
+
+        // Verifica CPF
+        const cpfExiste = usuarios.some(
+            u => u.cpf &&
+                u.cpf.replace(/\D/g, "") === cpfLimpo
+        );
+
+        if (cpfExiste) {
+            alert("Este CPF já está cadastrado.");
+            return;
+        }
+
+        // Verifica telefone
+        const telefoneExiste = usuarios.some(
+            u => u.telefone &&
+                u.telefone.replace(/\D/g, "") === telefoneLimpo
+        );
+
+        if (telefoneExiste) {
+            alert("Este telefone já está cadastrado.");
+            return;
+        }
+
+        // Cadastra usuário
+        await fetch("http://localhost:8080/usuarios", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                nome,
+                email,
+                telefone,
+                cpf,
+                senha
+            })
+        });
+
+        alert("Conta criada com sucesso!");
+        window.location.href = "login.html";
+
+    } catch (erro) {
+        console.error(erro);
+        alert("Erro ao cadastrar usuário.");
+    }
 }
 
 // ==========================

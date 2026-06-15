@@ -16,10 +16,13 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
 
+import com.mercadopago.exceptions.MPApiException;
+
 @RestController
 @RequestMapping("/pagamentos")
 @CrossOrigin(origins = "*")
 public class PagamentoController {
+
 
     @Autowired
     private VeiculoRepository veiculoRepository;
@@ -58,16 +61,14 @@ public class PagamentoController {
         PreferenceBackUrlsRequest backUrls =
                 PreferenceBackUrlsRequest.builder()
                         .success(
-                                "http://127.0.0.1:5500/frontend/sucesso.html?veiculoId="
+                                "https://idealness-nail-rearview.ngrok-free.dev/frontend/sucesso.html?veiculoId="
                                         + veiculoId
                         )
                         .failure(
-                                "http://127.0.0.1:5500/frontend/sucesso.html?veiculoId="
-                                        + veiculoId
+                                "https://idealness-nail-rearview.ngrok-free.dev/frontend/falha.html"
                         )
                         .pending(
-                                "http://127.0.0.1:5500/frontend/sucesso.html?veiculoId="
-                                        + veiculoId
+                                "https://idealness-nail-rearview.ngrok-free.dev/frontend/pendente.html"
                         )
                         .build();
 
@@ -76,19 +77,35 @@ public class PagamentoController {
                 PreferenceRequest.builder()
                         .items(Collections.singletonList(item))
                         .backUrls(backUrls)
+                        .autoReturn("approved")
                         .build();
 
         // Cria checkout
         PreferenceClient client =
                 new PreferenceClient();
 
-        Preference preference =
-                client.create(preferenceRequest);
+        try {
 
-        // Retorna URL
-        return Map.of(
-                "url",
-                preference.getInitPoint()
-        );
+            Preference preference =
+                    client.create(preferenceRequest);
+
+            return Map.of(
+                    "url",
+                    preference.getInitPoint()
+            );
+
+        } catch (MPApiException e) {
+
+            System.out.println("ERRO API:");
+            System.out.println(e.getApiResponse().getContent());
+
+            throw e;
+        }
     }
 }
+
+
+
+
+
+

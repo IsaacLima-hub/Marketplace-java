@@ -10,10 +10,15 @@ public class Usuario {
     private Long id;
 
     private String nome;
-    private String email;
     private String senha;
-    private String telefone;
+    @Column(unique = true)
     private String cpf;
+
+    @Column(unique = true)
+    private String telefone;
+
+    @Column(unique = true)
+    private String email;
 
     private Boolean admin = false;
 

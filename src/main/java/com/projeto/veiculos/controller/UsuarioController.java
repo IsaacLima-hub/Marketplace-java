@@ -30,10 +30,33 @@ public class UsuarioController {
 
     // Criar usuário com senha criptografada
     @PostMapping
-    public Usuario criar(@RequestBody Usuario usuario) {
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+    public ResponseEntity<?> criar(@RequestBody Usuario usuario) {
+
+        if (repository.existsByEmail(usuario.getEmail())) {
+            return ResponseEntity.badRequest()
+                    .body("Este e-mail já está cadastrado.");
+        }
+
+        if (repository.existsByCpf(usuario.getCpf())) {
+            return ResponseEntity.badRequest()
+                    .body("Este CPF já está cadastrado.");
+        }
+
+        if (repository.existsByTelefone(usuario.getTelefone())) {
+            return ResponseEntity.badRequest()
+                    .body("Este telefone já está cadastrado.");
+        }
+
+        usuario.setSenha(
+                passwordEncoder.encode(usuario.getSenha())
+        );
+
         usuario.setAdmin(false);
-        return repository.save(usuario);
+
+        Usuario usuarioSalvo =
+                repository.save(usuario);
+
+        return ResponseEntity.ok(usuarioSalvo);
     }
 
     // Buscar usuário pelo e-mail
